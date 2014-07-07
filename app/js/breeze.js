@@ -7,21 +7,52 @@ require.config({
 
 define('breeze', ['json!content/pages/menu.json!bust'], function (menuJson) {
 
+  var routingState = {
+    currentPage: ''
+  };
+
   function boot() {
 
-    console.log(menuJson);
+    var routes = {};
 
-    var menu = new Vue({
-      el: '#br-menu',
-      data: menuJson,
-      methods: {
-        uri: function (file) {
-          // Remove file extension
-          return file.replace(/\.[^/.]+$/, '');
-        }
+    for ( var i = 0; i < menuJson.pages.length; i+=1 ) {
+      menuJson.pages[i].uri = uri(menuJson.pages[i].file);
+      menuJson.pages[i].navigate = navigate(menuJson.pages[i])
+      routes[menuJson.pages[i].uri] = menuJson.pages[i].navigate;
+    }
+
+    var router = Router(routes);
+    router.on(/.*/, menuJson.pages[0].navigate);
+    router.init();
+
+    var content = new Vue({
+      el: '#br-content',
+      data: {
+        routingState: routingState
       }
     });
 
+    var menu = new Vue({
+      el: '#br-menu',
+      data: menuJson
+    });
+
+  }
+
+  function uri(pageFile) {
+    // Remove file extension
+    return pageFile.replace(/\.[^/.]+$/, '');
+  }
+
+  function navigate(page) {
+    return function () {
+      require(['text!content/pages/' + page.file], function (pageSource) {
+        Vue.component(page.uri, {
+          template: pageSource
+        });
+        routingState.currentPage = page.uri;
+      });
+    };
   }
 
   return {

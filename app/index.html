@@ -19,18 +19,19 @@
         <div id="br-menu">
           <ul>
             <li v-repeat="pages">
-              <a href="#{{uri(file)}}">{{title}}</a>
+              <a href="#{{uri}}">{{title}}</a>
             </li>
           </ul>
         </div>
         <div id="br-content">
-          <div v-view="currentPage"></div>
+          <div v-view="routingState.currentPage"></div>
         </div>
         <div id="br-footer">
 
         </div>
 
 
+        <script src="bower_components/director/build/director.js"></script>
         <script src="bower_components/vue/dist/vue.js"></script>
         <script src="bower_components/requirejs/require.js"></script>
         <script src="js/breeze.js"></script>
