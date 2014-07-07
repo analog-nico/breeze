@@ -8,7 +8,7 @@ define(function () {
           var self = this;
           require(['breeze', 'json!content/articles/index.json'], function (breeze, indexJson) {
             self.$data = indexJson;
-            breeze.router.on('blog/:articleId', function (articleId) {
+            breeze.router.on('/blog/:articleId', function (articleId) {
               breeze.pages.article.navigateTo({ articleId: articleId });
             });
           });
