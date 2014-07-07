@@ -8,21 +8,19 @@ require.config({
 
 define('breeze', ['json!content/pages/index.json'], function (menuJson) {
 
+  var router = Router();
   var routingState = {
     currentPage: ''
   };
 
   function boot() {
 
-    var routes = {};
-
     for ( var i = 0; i < menuJson.pages.length; i+=1 ) {
       menuJson.pages[i].uri = uri(menuJson.pages[i].file);
       menuJson.pages[i].navigateTo = navigateTo(menuJson.pages[i])
-      routes[menuJson.pages[i].uri] = menuJson.pages[i].navigateTo;
+      router.on(menuJson.pages[i].uri, menuJson.pages[i].navigateTo);
     }
 
-    var router = Router(routes);
     router.on(/.*/, function () {
       router.setRoute(menuJson.pages[0].uri);
     });
@@ -95,7 +93,8 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
   }
 
   return {
-    boot: boot
+    boot: boot,
+    router: router
   };
 
 });
