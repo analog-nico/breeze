@@ -49,12 +49,16 @@ define('breeze', ['json!content/pages/menu.json'], function (menuJson) {
 
   function navigate(page) {
     return function () {
-      require(['text!content/pages/' + page.file], function (pageSource) {
-        Vue.component(page.uri, {
-          template: marked(pageSource)
+      if (!Vue.options.components[page.uri]) {
+        require(['text!content/pages/' + page.file], function (pageSource) {
+          Vue.component(page.uri, {
+            template: marked(pageSource)
+          });
+          routingState.currentPage = page.uri;
         });
+      } else {
         routingState.currentPage = page.uri;
-      });
+      }
     };
   }
 
