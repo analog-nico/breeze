@@ -2,10 +2,11 @@ require.config({
   paths : {
     text: 'bower_components/requirejs-plugins/lib/text',
     json: 'bower_components/requirejs-plugins/src/json'
-  }
+  },
+  urlArgs: "bust=" + Math.round(2147483647 * Math.random())
 });
 
-define('breeze', ['json!content/pages/menu.json!bust'], function (menuJson) {
+define('breeze', ['json!content/pages/menu.json'], function (menuJson) {
 
   var routingState = {
     currentPage: ''
@@ -50,7 +51,7 @@ define('breeze', ['json!content/pages/menu.json!bust'], function (menuJson) {
     return function () {
       require(['text!content/pages/' + page.file], function (pageSource) {
         Vue.component(page.uri, {
-          template: pageSource
+          template: marked(pageSource)
         });
         routingState.currentPage = page.uri;
       });
