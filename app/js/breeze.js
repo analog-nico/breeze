@@ -80,18 +80,10 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
     return function () {
       if (!Vue.options.components[page.uri]) {
         require(scripts, function () {
+          runScripts('init');
           require(['text!content/pages/' + page.file], function (pageSource) {
             Vue.component(page.uri, {
-              template: marked(pageSource),
-              created: function () {
-                runScripts('beforeShow');
-              },
-              attached: function () {
-                runScripts('afterShow');
-              },
-              detached: function () {
-                runScriptsReverse('hide');
-              }
+              template: marked(pageSource)
             });
             routingState.currentPage = page.uri;
           });
