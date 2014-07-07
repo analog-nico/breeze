@@ -6,6 +6,13 @@
       "title": "Hello World!",
       "preview": "...",
       "scripts": []
+    },
+    {
+      "file": "hello-world2.md",
+      "published": "2014-07-07T11:27:00.000Z",
+      "title": "Hello World2!",
+      "preview": "...",
+      "scripts": []
     }
   ]
 }

@@ -57,31 +57,44 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
       }
     }
 
+    function runScripts(method) {
+      if (scripts.length !== 0) {
+        require(scripts, function () {
+          for ( var i = 0; i < arguments.length; i+= 1 ) {
+            (arguments[i][method])();
+          }
+        });
+      }
+    }
+
+    function runScriptsReverse(method) {
+      if (scripts.length !== 0) {
+        require(scripts, function () {
+          for ( var i = arguments.length-1; i >= 0; i-= 1 ) {
+            (arguments[i][method])();
+          }
+        });
+      }
+    }
+
     return function () {
       if (!Vue.options.components[page.uri]) {
-        require(['text!content/pages/' + page.file], function (pageSource) {
-          Vue.component(page.uri, {
-            template: marked(pageSource),
-            attached: function () {
-              if (scripts.length !== 0) {
-                require(scripts, function () {
-                  for ( var i = 0; i < arguments.length; i+= 1 ) {
-                    arguments[i].show();
-                  }
-                });
+        require(scripts, function () {
+          require(['text!content/pages/' + page.file], function (pageSource) {
+            Vue.component(page.uri, {
+              template: marked(pageSource),
+              created: function () {
+                runScripts('beforeShow');
+              },
+              attached: function () {
+                runScripts('afterShow');
+              },
+              detached: function () {
+                runScriptsReverse('hide');
               }
-            },
-            detached: function () {
-              if (scripts.length !== 0) {
-                require(scripts, function () {
-                  for ( var i = arguments.length-1; i >= 0; i-= 1 ) {
-                    arguments[i].hide();
-                  }
-                });
-              }
-            }
+            });
+            routingState.currentPage = page.uri;
           });
-          routingState.currentPage = page.uri;
         });
       } else {
         routingState.currentPage = page.uri;
