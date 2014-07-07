@@ -6,7 +6,8 @@
     },
     {
       "file": "blog.md",
-      "title": "Blog"
+      "title": "Blog",
+      "scripts": ["blog.js"]
     }
   ]
 }
