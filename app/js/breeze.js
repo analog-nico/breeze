@@ -57,26 +57,28 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
       }
     }
 
-    function runScripts(method) {
-      if (scripts.length !== 0) {
-        require(scripts, function () {
-          for ( var i = 0; i < arguments.length; i+= 1 ) {
-            (arguments[i][method])();
-          }
-        });
-      }
-    }
-
     return function () {
       if (!Vue.options.components[page.uri]) {
         require(['text!content/pages/' + page.file], function (pageSource) {
           Vue.component(page.uri, {
             template: marked(pageSource),
             attached: function () {
-              runScripts('show');
+              if (scripts.length !== 0) {
+                require(scripts, function () {
+                  for ( var i = 0; i < arguments.length; i+= 1 ) {
+                    arguments[i].show();
+                  }
+                });
+              }
             },
             detached: function () {
-              runScripts('hide');
+              if (scripts.length !== 0) {
+                require(scripts, function () {
+                  for ( var i = arguments.length-1; i >= 0; i-= 1 ) {
+                    arguments[i].hide();
+                  }
+                });
+              }
             }
           });
           routingState.currentPage = page.uri;
