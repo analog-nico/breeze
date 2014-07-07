@@ -13,6 +13,7 @@
     },
     {
       "file": "article.md",
+      "scripts": ["article.js"],
       "topLevel": false
     }
   ]

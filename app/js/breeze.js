@@ -112,6 +112,7 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
   return {
     boot: boot,
     router: router,
+    routingState: routingState,
     pages: pages
   };
 

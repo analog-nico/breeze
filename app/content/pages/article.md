@@ -1,1 +1,1 @@
-# {{routingState.parameters.articleId}}
+<div v-component="br-article"></div>
