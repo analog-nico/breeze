@@ -1,12 +1,13 @@
+var requirePluginPaths = {
+  text: 'bower_components/requirejs-plugins/lib/text',
+  json: 'bower_components/requirejs-plugins/src/json'
+};
 require.config({
-  paths : {
-    text: 'bower_components/requirejs-plugins/lib/text',
-    json: 'bower_components/requirejs-plugins/src/json'
-  },
+  paths : requirePluginPaths,
   urlArgs: "bust=" + Math.round(2147483647 * Math.random())
 });
 
-define('breeze', ['json!content/pages/index.json'], function (menuJson) {
+define('breeze', ['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (menuJson) {
 
   var router = Router();
   var routingState = {
@@ -92,15 +93,13 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
     return function (parameters) {
       parameters = parameters || {};
       if (!Vue.options.components[page.uri]) {
-        require(scripts, function () {
+        require((['text!content/pages/' + page.file]).concat(scripts), function (pageSource) {
           runScripts('init');
-          require(['text!content/pages/' + page.file], function (pageSource) {
-            Vue.component(page.uri, {
-              template: marked(pageSource)
-            });
-            routingState.currentPage = page.uri;
-            routingState.parameters = parameters;
+          Vue.component(page.uri, {
+            template: marked(pageSource)
           });
+          routingState.currentPage = page.uri;
+          routingState.parameters = parameters;
         });
       } else {
         routingState.currentPage = page.uri;
