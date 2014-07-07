@@ -23,7 +23,7 @@ define('breeze', ['json!content/pages/menu.json!bust'], function (menuJson) {
 
     var router = Router(routes);
     router.on(/.*/, menuJson.pages[0].navigate);
-    router.init();
+    router.init('#' + menuJson.pages[0].uri);
 
     var content = new Vue({
       el: '#br-content',
