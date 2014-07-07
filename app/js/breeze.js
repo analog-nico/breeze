@@ -22,8 +22,10 @@ define('breeze', ['json!content/pages/menu.json!bust'], function (menuJson) {
     }
 
     var router = Router(routes);
-    router.on(/.*/, menuJson.pages[0].navigate);
-    router.init('#' + menuJson.pages[0].uri);
+    router.on(/.*/, function () {
+      router.setRoute(menuJson.pages[0].uri);
+    });
+    router.init('#/' + menuJson.pages[0].uri);
 
     var content = new Vue({
       el: '#br-content',
