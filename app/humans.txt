@@ -1,0 +1,15 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    <name> -- <role> -- <twitter>
+
+# THANKS
+
+    <name>
+
+# TECHNOLOGY COLOPHON
+
+    Forked from Breeze (https://github.com/analog-nico/breeze)
+    HTML5 Boilerplate, Bootstrap, Vue.js

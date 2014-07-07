@@ -1,0 +1,12 @@
+{
+  "pages": [
+    {
+      "file": "home.md",
+      "title": "Home"
+    },
+    {
+      "file": "blog.md",
+      "title": "Blog"
+    }
+  ]
+}

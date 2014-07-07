@@ -1,0 +1,11 @@
+{
+  "name": "breeze",
+  "version": "0.0.0",
+  "dependencies": {
+    "bootstrap-sass-official": "~3.2.0",
+    "vue": "~0.10.5",
+    "requirejs": "~2.1.14",
+    "requirejs-plugins": "~1.0.2"
+  },
+  "devDependencies": {}
+}
