@@ -2,12 +2,18 @@
   "pages": [
     {
       "file": "home.md",
-      "title": "Home"
+      "title": "Home",
+      "topLevel": true
     },
     {
       "file": "blog.md",
       "title": "Blog",
-      "scripts": ["blog.js"]
+      "scripts": ["blog.js"],
+      "topLevel": true
+    },
+    {
+      "file": "article.md",
+      "topLevel": false
     }
   ]
 }

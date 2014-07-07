@@ -10,15 +10,18 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
 
   var router = Router();
   var routingState = {
-    currentPage: ''
+    currentPage: '',
+    parameters: {}
   };
+  var pages = {};
 
   function boot() {
 
     for ( var i = 0; i < menuJson.pages.length; i+=1 ) {
       menuJson.pages[i].uri = uri(menuJson.pages[i].file);
-      menuJson.pages[i].navigateTo = navigateTo(menuJson.pages[i])
+      menuJson.pages[i].navigateTo = navigateTo(menuJson.pages[i]);
       router.on(menuJson.pages[i].uri, menuJson.pages[i].navigateTo);
+      pages[menuJson.pages[i].uri] = menuJson.pages[i];
     }
 
     router.on(/.*/, function () {
@@ -26,16 +29,27 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
     });
     router.init('#/' + menuJson.pages[0].uri);
 
-    var content = new Vue({
-      el: '#br-content',
-      data: {
-        routingState: routingState
+    Vue.filter('TopLevel', function (list) {
+      var newList = [];
+      for ( var i = 0; i < list.length; i+=1 ) {
+        if (list[i].topLevel === false) {
+          continue;
+        }
+        newList[newList.length] = list[i];
       }
+      return newList;
     });
 
     var menu = new Vue({
       el: '#br-menu',
       data: menuJson
+    });
+
+    var content = new Vue({
+      el: '#br-content',
+      data: {
+        routingState: routingState
+      }
     });
 
   }
@@ -75,7 +89,8 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
       }
     }
 
-    return function () {
+    return function (parameters) {
+      parameters = parameters || {};
       if (!Vue.options.components[page.uri]) {
         require(scripts, function () {
           runScripts('init');
@@ -84,17 +99,20 @@ define('breeze', ['json!content/pages/index.json'], function (menuJson) {
               template: marked(pageSource)
             });
             routingState.currentPage = page.uri;
+            routingState.parameters = parameters;
           });
         });
       } else {
         routingState.currentPage = page.uri;
+        routingState.parameters = parameters;
       }
     };
   }
 
   return {
     boot: boot,
-    router: router
+    router: router,
+    pages: pages
   };
 
 });
