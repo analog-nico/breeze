@@ -7,12 +7,12 @@ define(function () {
       template: '<content></content>',
       created: function () {
         var self = this;
-        require(['breeze', 'json!content/articles/index.json'], function (breeze, indexJson) {
+        require(['breeze', 'json!content/articles/index.json'], function (breeze, articleIndexJson) {
 
-          self.$data = indexJson;
+          self.$data = articleIndexJson;
 
-          for ( var i = 0; i < indexJson.articles.length; i+=1 ) {
-            articles[indexJson.articles[i].file.replace(/\.[^/.]+$/, '')] = indexJson.articles[i];
+          for ( var i = 0; i < articleIndexJson.articles.length; i+=1 ) {
+            articles[articleIndexJson.articles[i].file.replace(/\.[^/.]+$/, '')] = articleIndexJson.articles[i];
           }
 
           breeze.router.on('/blog/:articleId', function (articleId) {

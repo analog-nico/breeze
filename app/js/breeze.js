@@ -22,20 +22,20 @@
 
     breeze.boot = function () {
 
-      require(['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (menuJson) {
+      require(['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (pageIndexJson) {
 
-        for ( var i = 0; i < menuJson.pages.length; i+=1 ) {
-          menuJson.pages[i].uri = uri(menuJson.pages[i].file);
-          menuJson.pages[i].navigateTo = navigateTo(menuJson.pages[i]);
-          breeze.router.on(menuJson.pages[i].uri, menuJson.pages[i].navigateTo);
-          breeze.pages[menuJson.pages[i].uri] = menuJson.pages[i];
+        for ( var i = 0; i < pageIndexJson.pages.length; i+=1 ) {
+          pageIndexJson.pages[i].uri = uri(pageIndexJson.pages[i].file);
+          pageIndexJson.pages[i].navigateTo = navigateTo(pageIndexJson.pages[i]);
+          breeze.router.on(pageIndexJson.pages[i].uri, pageIndexJson.pages[i].navigateTo);
+          breeze.pages[pageIndexJson.pages[i].uri] = pageIndexJson.pages[i];
         }
 
         breeze.navigateToHome = function () {
-          breeze.router.setRoute(menuJson.pages[0].uri);
+          breeze.router.setRoute(pageIndexJson.pages[0].uri);
         };
         breeze.router.on(/.*/, breeze.navigateToHome);
-        breeze.router.init('#' + menuJson.pages[0].uri);
+        breeze.router.init('#' + pageIndexJson.pages[0].uri);
 
         Vue.filter('TopLevel', function (list) {
           var newList = [];
@@ -50,7 +50,7 @@
 
         var menu = new Vue({
           el: '#br-menu',
-          data: menuJson
+          data: pageIndexJson
         });
 
         var content = new Vue({
