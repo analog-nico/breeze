@@ -22,7 +22,7 @@
 
     breeze.boot = function () {
 
-      require(['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (pageIndexJson) {
+      require(['json!content/pages/index.json', 'content/pages/blog.js', requirePluginPaths.text + '.js'], function (pageIndexJson, blog) {
 
         for ( var i = 0; i < pageIndexJson.pages.length; i+=1 ) {
           pageIndexJson.pages[i].uri = uri(pageIndexJson.pages[i].file);
@@ -31,36 +31,40 @@
           breeze.pages[pageIndexJson.pages[i].uri] = pageIndexJson.pages[i];
         }
 
-        breeze.navigateToHome = function () {
-          breeze.router.setRoute(pageIndexJson.pages[0].uri);
-        };
-        breeze.router.on(/.*/, breeze.navigateToHome);
-        breeze.router.init('#' + pageIndexJson.pages[0].uri);
+        blog.registerRoutes(function () {
 
-        Vue.filter('TopLevel', function (list) {
-          var newList = [];
-          for ( var i = 0; i < list.length; i+=1 ) {
-            if (list[i].topLevel === false) {
-              continue;
+          breeze.navigateToHome = function () {
+            breeze.router.setRoute(pageIndexJson.pages[0].uri);
+          };
+          breeze.router.on(/.*/, breeze.navigateToHome);
+          breeze.router.init('#' + pageIndexJson.pages[0].uri);
+
+          Vue.filter('TopLevel', function (list) {
+            var newList = [];
+            for ( var i = 0; i < list.length; i+=1 ) {
+              if (list[i].topLevel === false) {
+                continue;
+              }
+              newList[newList.length] = list[i];
             }
-            newList[newList.length] = list[i];
-          }
-          return newList;
-        });
+            return newList;
+          });
 
-        var menu = new Vue({
-          el: '#br-menu',
-          data: {
-            pages: pageIndexJson.pages,
-            routingState: breeze.routingState
-          }
-        });
+          var menu = new Vue({
+            el: '#br-menu',
+            data: {
+              pages: pageIndexJson.pages,
+              routingState: breeze.routingState
+            }
+          });
 
-        var content = new Vue({
-          el: '#br-content',
-          data: {
-            routingState: breeze.routingState
-          }
+          var content = new Vue({
+            el: '#br-content',
+            data: {
+              routingState: breeze.routingState
+            }
+          });
+
         });
 
       });

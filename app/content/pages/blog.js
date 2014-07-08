@@ -2,29 +2,44 @@ define(function () {
 
   var articles = {};
 
+  function registerRoutes(done) {
+
+    if (articles.length > 0) {
+      return;
+    }
+
+    require(['breeze', 'json!content/articles/index.json'], function (breeze, articleIndexJson) {
+
+      for ( var i = 0; i < articleIndexJson.articles.length; i+=1 ) {
+        articles[articleIndexJson.articles[i].file.replace(/\.[^/.]+$/, '')] = articleIndexJson.articles[i];
+      }
+
+      breeze.router.on('/blog/:articleId', function (articleId) {
+
+        if (!articles[articleId]) {
+          breeze.navigateToHome();
+          return;
+        }
+
+        breeze.pages['/article'].navigateTo({ articleId: articleId });
+
+      });
+
+      done();
+
+    });
+
+  }
+
   function init() {
     Vue.component('br-articleList', {
       template: '<content></content>',
       created: function () {
         var self = this;
-        require(['breeze', 'json!content/articles/index.json'], function (breeze, articleIndexJson) {
+        require(['json!content/articles/index.json'], function (articleIndexJson) {
 
           self.$data = articleIndexJson;
-
-          for ( var i = 0; i < articleIndexJson.articles.length; i+=1 ) {
-            articles[articleIndexJson.articles[i].file.replace(/\.[^/.]+$/, '')] = articleIndexJson.articles[i];
-          }
-
-          breeze.router.on('/blog/:articleId', function (articleId) {
-
-            if (!articles[articleId]) {
-              breeze.navigateToHome();
-              return;
-            }
-
-            breeze.pages['/article'].navigateTo({ articleId: articleId });
-
-          });
+          registerRoutes(function () {});
 
         });
       },
@@ -39,6 +54,7 @@ define(function () {
   }
 
   return {
+    registerRoutes: registerRoutes,
     init: init
   };
 
