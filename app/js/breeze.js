@@ -50,7 +50,10 @@
 
         var menu = new Vue({
           el: '#br-menu',
-          data: pageIndexJson
+          data: {
+            pages: pageIndexJson.pages,
+            routingState: breeze.routingState
+          }
         });
 
         var content = new Vue({

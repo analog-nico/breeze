@@ -19,7 +19,9 @@
         <div id="br-menu">
           <ul>
             <li v-repeat="pages | TopLevel">
-              <a href="#{{uri}}">{{title}}</a>
+              <!--span v-class="hidden: routingState.currentPage == uri">test</span-->
+              <b v-if="routingState.currentPage == uri">{{title}}</b>
+              <a v-if="routingState.currentPage != uri" href="#{{uri}}">{{title}}</a>
             </li>
           </ul>
         </div>
