@@ -22,7 +22,7 @@ define(function () {
               return;
             }
 
-            breeze.pages.article.navigateTo({ articleId: articleId });
+            breeze.pages['/article'].navigateTo({ articleId: articleId });
 
           });
 
@@ -32,7 +32,7 @@ define(function () {
         uri: function (articleFile) {
           // Remove file extension
           var uri = articleFile.replace(/\.[^/.]+$/, '');
-          return 'blog/' + uri;
+          return '/blog/' + uri;
         }
       }
     });

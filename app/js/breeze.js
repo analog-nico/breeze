@@ -33,7 +33,7 @@
         breeze.router.setRoute(menuJson.pages[0].uri);
       };
       breeze.router.on(/.*/, breeze.navigateToHome);
-      breeze.router.init('#/' + menuJson.pages[0].uri);
+      breeze.router.init('#' + menuJson.pages[0].uri);
 
       Vue.filter('TopLevel', function (list) {
         var newList = [];
@@ -62,7 +62,7 @@
 
     function uri(pageFile) {
       // Remove file extension
-      return pageFile.replace(/\.[^/.]+$/, '');
+      return '/' + pageFile.replace(/\.[^/.]+$/, '');
     }
 
     function navigateTo(page) {
