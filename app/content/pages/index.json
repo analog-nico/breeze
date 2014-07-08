@@ -15,6 +15,11 @@
       "file": "article.md",
       "scripts": ["article.js"],
       "topLevel": false
+    },
+    {
+      "file": "favorites.md",
+      "title": "Favorites",
+      "topLevel": true
     }
   ]
 }

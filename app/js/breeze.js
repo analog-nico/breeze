@@ -11,26 +11,30 @@
 
   define('breeze', ['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (menuJson) {
 
-    var router = Router();
-    var routingState = {
-      currentPage: '',
-      parameters: {}
+    var breeze = {
+      router: Router(),
+      routingState: {
+        currentPage: '',
+        parameters: {}
+      },
+      pages: {},
+      navigateToHome: function () { }
     };
-    var pages = {};
 
-    function boot() {
+    breeze.boot = function () {
 
       for ( var i = 0; i < menuJson.pages.length; i+=1 ) {
         menuJson.pages[i].uri = uri(menuJson.pages[i].file);
         menuJson.pages[i].navigateTo = navigateTo(menuJson.pages[i]);
-        router.on(menuJson.pages[i].uri, menuJson.pages[i].navigateTo);
-        pages[menuJson.pages[i].uri] = menuJson.pages[i];
+        breeze.router.on(menuJson.pages[i].uri, menuJson.pages[i].navigateTo);
+        breeze.pages[menuJson.pages[i].uri] = menuJson.pages[i];
       }
 
-      router.on(/.*/, function () {
-        router.setRoute(menuJson.pages[0].uri);
-      });
-      router.init('#/' + menuJson.pages[0].uri);
+      breeze.navigateToHome = function () {
+        breeze.router.setRoute(menuJson.pages[0].uri);
+      };
+      breeze.router.on(/.*/, breeze.navigateToHome);
+      breeze.router.init('#/' + menuJson.pages[0].uri);
 
       Vue.filter('TopLevel', function (list) {
         var newList = [];
@@ -51,7 +55,7 @@
       var content = new Vue({
         el: '#br-content',
         data: {
-          routingState: routingState
+          routingState: breeze.routingState
         }
       });
 
@@ -100,22 +104,17 @@
             Vue.component(page.uri, {
               template: marked(pageSource)
             });
-            routingState.currentPage = page.uri;
-            routingState.parameters = parameters;
+            breeze.routingState.currentPage = page.uri;
+            breeze.routingState.parameters = parameters;
           });
         } else {
-          routingState.currentPage = page.uri;
-          routingState.parameters = parameters;
+          breeze.routingState.currentPage = page.uri;
+          breeze.routingState.parameters = parameters;
         }
       };
     }
 
-    return {
-      boot: boot,
-      router: router,
-      routingState: routingState,
-      pages: pages
-    };
+    return breeze;
 
   });
 
