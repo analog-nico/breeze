@@ -12,13 +12,12 @@
   define('breeze', ['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (menuJson) {
 
     var breeze = {
+      pages: {},
       router: Router(),
       routingState: {
         currentPage: '',
         parameters: {}
-      },
-      pages: {},
-      navigateToHome: function () { }
+      }
     };
 
     breeze.boot = function () {
@@ -59,7 +58,7 @@
         }
       });
 
-    }
+    };
 
     function uri(pageFile) {
       // Remove file extension
@@ -113,6 +112,10 @@
         }
       };
     }
+
+    breeze.navigateToHome = function () {
+      // Implementation will be provided during boot()
+    };
 
     return breeze;
 
