@@ -2,14 +2,12 @@
   "pages": [
     {
       "file": "home.md",
-      "title": "Home",
-      "topLevel": true
+      "title": "Home"
     },
     {
       "file": "blog.md",
       "title": "Blog",
-      "scripts": ["blog.js"],
-      "topLevel": true
+      "scripts": ["blog.js"]
     },
     {
       "file": "article.md",
@@ -18,8 +16,7 @@
     },
     {
       "file": "favorites.md",
-      "title": "Favorites",
-      "topLevel": true
+      "title": "Favorites"
     }
   ]
 }
