@@ -9,7 +9,7 @@
     urlArgs: "bust=" + Math.round(2147483647 * Math.random())
   });
 
-  define('breeze', ['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (menuJson) {
+  define('breeze', function () {
 
     var breeze = {
       pages: {},
@@ -22,40 +22,44 @@
 
     breeze.boot = function () {
 
-      for ( var i = 0; i < menuJson.pages.length; i+=1 ) {
-        menuJson.pages[i].uri = uri(menuJson.pages[i].file);
-        menuJson.pages[i].navigateTo = navigateTo(menuJson.pages[i]);
-        breeze.router.on(menuJson.pages[i].uri, menuJson.pages[i].navigateTo);
-        breeze.pages[menuJson.pages[i].uri] = menuJson.pages[i];
-      }
+      require(['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (menuJson) {
 
-      breeze.navigateToHome = function () {
-        breeze.router.setRoute(menuJson.pages[0].uri);
-      };
-      breeze.router.on(/.*/, breeze.navigateToHome);
-      breeze.router.init('#' + menuJson.pages[0].uri);
+        for ( var i = 0; i < menuJson.pages.length; i+=1 ) {
+          menuJson.pages[i].uri = uri(menuJson.pages[i].file);
+          menuJson.pages[i].navigateTo = navigateTo(menuJson.pages[i]);
+          breeze.router.on(menuJson.pages[i].uri, menuJson.pages[i].navigateTo);
+          breeze.pages[menuJson.pages[i].uri] = menuJson.pages[i];
+        }
 
-      Vue.filter('TopLevel', function (list) {
-        var newList = [];
-        for ( var i = 0; i < list.length; i+=1 ) {
-          if (list[i].topLevel === false) {
-            continue;
+        breeze.navigateToHome = function () {
+          breeze.router.setRoute(menuJson.pages[0].uri);
+        };
+        breeze.router.on(/.*/, breeze.navigateToHome);
+        breeze.router.init('#' + menuJson.pages[0].uri);
+
+        Vue.filter('TopLevel', function (list) {
+          var newList = [];
+          for ( var i = 0; i < list.length; i+=1 ) {
+            if (list[i].topLevel === false) {
+              continue;
+            }
+            newList[newList.length] = list[i];
           }
-          newList[newList.length] = list[i];
-        }
-        return newList;
-      });
+          return newList;
+        });
 
-      var menu = new Vue({
-        el: '#br-menu',
-        data: menuJson
-      });
+        var menu = new Vue({
+          el: '#br-menu',
+          data: menuJson
+        });
 
-      var content = new Vue({
-        el: '#br-content',
-        data: {
-          routingState: breeze.routingState
-        }
+        var content = new Vue({
+          el: '#br-content',
+          data: {
+            routingState: breeze.routingState
+          }
+        });
+
       });
 
     };
