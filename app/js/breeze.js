@@ -106,12 +106,21 @@
         parameters = parameters || {};
         if (!Vue.options.components[page.uri]) {
           require((['text!content/pages/' + page.file]).concat(scripts), function (pageSource) {
+
             runScripts('init');
-            Vue.component(page.uri, {
-              template: marked(pageSource)
+
+            // Allow new components probably registered in runScripts('init'); to initialize first.
+            Vue.nextTick(function () {
+
+              Vue.component(page.uri, {
+                template: marked(pageSource)
+              });
+
+              breeze.routingState.currentPage = page.uri;
+              breeze.routingState.parameters = parameters;
+
             });
-            breeze.routingState.currentPage = page.uri;
-            breeze.routingState.parameters = parameters;
+
           });
         } else {
           breeze.routingState.currentPage = page.uri;
