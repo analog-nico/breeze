@@ -22,7 +22,7 @@
 
     breeze.boot = function () {
 
-      require(['json!content/pages/index.json', 'content/pages/blog.js', requirePluginPaths.text + '.js'], function (pageIndexJson, blog) {
+      require(['json!content/pages/index.json', requirePluginPaths.text + '.js'], function (pageIndexJson) {
 
         for ( var i = 0; i < pageIndexJson.pages.length; i+=1 ) {
           pageIndexJson.pages[i].uri = uri(pageIndexJson.pages[i].file);
@@ -31,40 +31,54 @@
           breeze.pages[pageIndexJson.pages[i].uri] = pageIndexJson.pages[i];
         }
 
-        blog.registerRoutes(function () {
+        var retryRouting = false;
+        breeze.navigateToHome = function () {
 
-          breeze.navigateToHome = function () {
+          var requestedRoute = breeze.router.getRoute();
+          var scriptsOfTopLevelPage = getScripts(breeze.pages['/' + requestedRoute[0]]);
+
+          if (scriptsOfTopLevelPage.length === 0 || retryRouting === true) {
+            retryRouting = false;
             breeze.router.setRoute(pageIndexJson.pages[0].uri);
-          };
-          breeze.router.on(/.*/, breeze.navigateToHome);
-          breeze.router.init('#' + pageIndexJson.pages[0].uri);
+          }
 
-          Vue.filter('TopLevel', function (list) {
-            var newList = [];
-            for ( var i = 0; i < list.length; i+=1 ) {
-              if (list[i].topLevel === false) {
-                continue;
-              }
-              newList[newList.length] = list[i];
-            }
-            return newList;
+          retryRouting = true;
+
+          require(scriptsOfTopLevelPage, function () {
+            runScriptsAsync(scriptsOfTopLevelPage, 'registerRoutes', function () {
+              // Run router again (USES INTERNAL API)
+              breeze.router.handler();
+            });
           });
 
-          var menu = new Vue({
-            el: '#br-menu',
-            data: {
-              pages: pageIndexJson.pages,
-              routingState: breeze.routingState
-            }
-          });
+        };
+        breeze.router.on(/.*/, breeze.navigateToHome);
+        breeze.router.init('#' + pageIndexJson.pages[0].uri);
 
-          var content = new Vue({
-            el: '#br-content',
-            data: {
-              routingState: breeze.routingState
+        Vue.filter('TopLevel', function (list) {
+          var newList = [];
+          for ( var i = 0; i < list.length; i+=1 ) {
+            if (list[i].topLevel === false) {
+              continue;
             }
-          });
+            newList[newList.length] = list[i];
+          }
+          return newList;
+        });
 
+        var menu = new Vue({
+          el: '#br-menu',
+          data: {
+            pages: pageIndexJson.pages,
+            routingState: breeze.routingState
+          }
+        });
+
+        var content = new Vue({
+          el: '#br-content',
+          data: {
+            routingState: breeze.routingState
+          }
         });
 
       });
@@ -76,44 +90,61 @@
       return '/' + pageFile.replace(/\.[^/.]+$/, '');
     }
 
-    function navigateTo(page) {
-
+    function getScripts(page) {
       var scripts = [];
-
-      if (!!page.scripts) {
+      if (!!page && !!page.scripts && page.scripts.length > 0) {
         for ( var i = 0; i < page.scripts.length; i+= 1 ) {
           scripts[i] = 'content/pages/' + page.scripts[i];
         }
       }
+      return scripts;
+    }
 
-      function runScripts(method) {
-        if (scripts.length !== 0) {
-          require(scripts, function () {
-            for ( var i = 0; i < arguments.length; i+= 1 ) {
-              (arguments[i][method])();
-            }
-          });
-        }
+    function runScripts(scripts, method) {
+      if (scripts.length !== 0) {
+        require(scripts, function () {
+          for ( var i = 0; i < arguments.length; i+= 1 ) {
+            (arguments[i][method])();
+          }
+        });
       }
+    }
 
-      function runScriptsReverse(method) {
-        if (scripts.length !== 0) {
-          require(scripts, function () {
-            for ( var i = arguments.length-1; i >= 0; i-= 1 ) {
-              (arguments[i][method])();
-            }
-          });
-        }
+    function runScriptsAsync(scripts, method, done) {
+      if (scripts.length === 0) {
+        done();
+      } else {
+        // TODO: Run all scripts, not just the first
+        require([scripts[0]], function () {
+          (arguments[0][method])(done);
+        });
       }
+    }
+
+    function runScriptsReverse(scripts, method) {
+      if (scripts.length !== 0) {
+        require(scripts, function () {
+          for ( var i = arguments.length-1; i >= 0; i-= 1 ) {
+            (arguments[i][method])();
+          }
+        });
+      }
+    }
+
+    function navigateTo(page) {
 
       return function (parameters) {
         parameters = parameters || {};
+
         if (!Vue.options.components[page.uri]) {
+
+          var scripts = getScripts(page);
+
           require((['text!content/pages/' + page.file]).concat(scripts), function (pageSource) {
 
-            runScripts('init');
+            runScripts(scripts, 'init');
 
-            // Allow new components probably registered in runScripts('init'); to initialize first.
+            // Allow new components probably registered in runScripts(scripts, 'init'); to initialize first.
             Vue.nextTick(function () {
 
               Vue.component(page.uri, {
@@ -131,6 +162,7 @@
           breeze.routingState.parameters = parameters;
         }
       };
+
     }
 
     breeze.navigateToHome = function () {
