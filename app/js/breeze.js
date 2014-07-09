@@ -23,9 +23,7 @@
         Path.listen();
       },
       navigateTo: function (route) {
-        location.hash = route;
-        // TODO: Does not change the URL
-        //Path.dispatch(route);
+        window.location.hash = route;
       },
       retryRouting: function (requestedRoute) {
         // Run router again (USES INTERNAL API)
@@ -40,7 +38,43 @@
 
   });
 
-  define('breeze', ['breeze/router'], function (router) {
+  define('breeze/escapedFragmentDecoder', function () {
+
+    return {
+      escapedFragmentExists: function () {
+        return (this.getEscapedFragment() !== null);
+      },
+      getEscapedFragment: function () {
+        // Searching with /g because found obscure behaviour without
+        var escapedFragment = window.location.search.match(/(\?|&)_escaped_fragment_=[^&]*$/g);
+        if (escapedFragment !== null) {
+          escapedFragment = escapedFragment[0];
+        }
+        return escapedFragment;
+      },
+      decodeEscapedFragment: function () {
+        return decodeURIComponent(
+          this.getEscapedFragment()
+            .substr(1)
+            .replace(/_escaped_fragment_=/g, '')
+        );
+      },
+      convertEscapedFragmentToHashbang: function () {
+        // This is a little simplistic:
+        // - It does not change the location.search.
+        // - It ignores an already existing hash.
+        var search = window.location.search;
+        var newSearch = search.substring(0, search.lastIndexOf('_escaped_fragment_=') - 1);
+        var hash = window.location.hash;
+        var newHash = '#!' + this.decodeEscapedFragment();
+        //window.location.search = newSearch;
+        window.location.hash = newHash;
+      }
+    };
+
+  });
+
+  define('breeze', ['breeze/router', 'breeze/escapedFragmentDecoder'], function (router, escapedFragmentDecoder) {
 
     var breeze = {
       pages: {},
@@ -66,26 +100,40 @@
         var retryRouting = false;
         breeze.navigateToHome = function () {
 
+          // Try registering currently unknown routes
           var requestedRoute = this.current || '';
           var routeSegments = requestedRoute.split('/');
           var scriptsOfTopLevelPage = getScripts(breeze.pages['#!/' + routeSegments[1]]);
 
-          if (requestedRoute === '' || scriptsOfTopLevelPage.length === 0 || retryRouting === true) {
-            retryRouting = false;
-            breeze.router.navigateTo(pageIndexJson.pages[0].uri);
+          if (requestedRoute !== '' && scriptsOfTopLevelPage.length > 0 && retryRouting === false) {
+
+            retryRouting = true;
+
+            require(scriptsOfTopLevelPage, function () {
+              runScriptsAsync(scriptsOfTopLevelPage, 'registerRoutes', function () {
+                breeze.router.retryRouting(requestedRoute);
+              });
+            });
+
+            return;
+
           }
 
-          retryRouting = true;
-
-          require(scriptsOfTopLevelPage, function () {
-            runScriptsAsync(scriptsOfTopLevelPage, 'registerRoutes', function () {
-              breeze.router.retryRouting(requestedRoute);
-            });
-          });
+          // Nothing helped -> Go home.
+          retryRouting = false;
+          breeze.router.navigateTo(pageIndexJson.pages[0].uri);
 
         };
         breeze.router.set404Fallback(breeze.navigateToHome);
+
+        // Is Google crawling?
+        // https://developers.google.com/webmasters/ajax-crawling/docs/specification
+        if (escapedFragmentDecoder.escapedFragmentExists()) {
+          escapedFragmentDecoder.convertEscapedFragmentToHashbang();
+        }
+
         breeze.router.startListening(pageIndexJson.pages[0].uri);
+
 
         Vue.filter('TopLevel', function (list) {
           var newList = [];
