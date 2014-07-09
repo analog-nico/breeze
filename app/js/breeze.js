@@ -9,11 +9,42 @@
     urlArgs: "bust=" + Math.round(2147483647 * Math.random())
   });
 
-  define('breeze', function () {
+  define('breeze/router', ['path'], function (Path) {
+
+    return {
+      addRoute: function (route, callback) {
+        Path.map(route).to(callback);
+      },
+      set404Fallback: function (callback) {
+        Path.rescue(callback);
+      },
+      startListening: function (defaultRoute) {
+        Path.root(defaultRoute);
+        Path.listen();
+      },
+      navigateTo: function (route) {
+        location.hash = route;
+        // TODO: Does not change the URL
+        //Path.dispatch(route);
+      },
+      retryRouting: function (requestedRoute) {
+        // Run router again (USES INTERNAL API)
+        var matched_route = Path.match(requestedRoute, true);
+        if (matched_route !== null) {
+          matched_route.run();
+        } else {
+          Path.routes.rescue();
+        }
+      }
+    };
+
+  });
+
+  define('breeze', ['breeze/router'], function (router) {
 
     var breeze = {
       pages: {},
-      router: Router(),
+      router: router,
       routingState: {
         currentPage: '',
         parameters: {}
@@ -27,33 +58,34 @@
         for ( var i = 0; i < pageIndexJson.pages.length; i+=1 ) {
           pageIndexJson.pages[i].uri = uri(pageIndexJson.pages[i].file);
           pageIndexJson.pages[i].navigateTo = navigateTo(pageIndexJson.pages[i]);
-          breeze.router.on(pageIndexJson.pages[i].uri, pageIndexJson.pages[i].navigateTo);
+          // TODO: Don't map non-topLevel pages
+          breeze.router.addRoute(pageIndexJson.pages[i].uri, pageIndexJson.pages[i].navigateTo);
           breeze.pages[pageIndexJson.pages[i].uri] = pageIndexJson.pages[i];
         }
 
         var retryRouting = false;
         breeze.navigateToHome = function () {
 
-          var requestedRoute = breeze.router.getRoute();
-          var scriptsOfTopLevelPage = getScripts(breeze.pages['/' + requestedRoute[0]]);
+          var requestedRoute = this.current || '';
+          var routeSegments = requestedRoute.split('/');
+          var scriptsOfTopLevelPage = getScripts(breeze.pages['#!/' + routeSegments[1]]);
 
-          if (scriptsOfTopLevelPage.length === 0 || retryRouting === true) {
+          if (requestedRoute === '' || scriptsOfTopLevelPage.length === 0 || retryRouting === true) {
             retryRouting = false;
-            breeze.router.setRoute(pageIndexJson.pages[0].uri);
+            breeze.router.navigateTo(pageIndexJson.pages[0].uri);
           }
 
           retryRouting = true;
 
           require(scriptsOfTopLevelPage, function () {
             runScriptsAsync(scriptsOfTopLevelPage, 'registerRoutes', function () {
-              // Run router again (USES INTERNAL API)
-              breeze.router.handler();
+              breeze.router.retryRouting(requestedRoute);
             });
           });
 
         };
-        breeze.router.on(/.*/, breeze.navigateToHome);
-        breeze.router.init('#' + pageIndexJson.pages[0].uri);
+        breeze.router.set404Fallback(breeze.navigateToHome);
+        breeze.router.startListening(pageIndexJson.pages[0].uri);
 
         Vue.filter('TopLevel', function (list) {
           var newList = [];
@@ -87,7 +119,7 @@
 
     function uri(pageFile) {
       // Remove file extension
-      return '/' + pageFile.replace(/\.[^/.]+$/, '');
+      return '#!/' + pageFile.replace(/\.[^/.]+$/, '');
     }
 
     function getScripts(page) {

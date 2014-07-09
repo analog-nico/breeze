@@ -14,14 +14,16 @@ define(function () {
         articles[articleIndexJson.articles[i].file.replace(/\.[^/.]+$/, '')] = articleIndexJson.articles[i];
       }
 
-      breeze.router.on('/blog/:articleId', function (articleId) {
+      breeze.router.addRoute('#!/blog/:articleId', function () {
+
+        var articleId = this.params['articleId'];
 
         if (!articles[articleId]) {
           breeze.navigateToHome();
           return;
         }
 
-        breeze.pages['/article'].navigateTo({ articleId: articleId });
+        breeze.pages['#!/article'].navigateTo({ articleId: articleId });
 
       });
 
@@ -47,7 +49,7 @@ define(function () {
         uri: function (articleFile) {
           // Remove file extension
           var uri = articleFile.replace(/\.[^/.]+$/, '');
-          return '/blog/' + uri;
+          return '#!/blog/' + uri;
         }
       }
     });
